@@ -1,10 +1,11 @@
 package nyc.shannonalexander_navarro.kanyemashup
 
 import android.util.Log
+import io.reactivex.Observer
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import nyc.shannonalexander_navarro.kanyemashup.model.KanyeQuote
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class MainActivityPresenter {
 
@@ -22,24 +23,27 @@ class MainActivityPresenter {
         contract!!.showProgressBar()
 
         val call = KanyeClient.createService().getKanyeQuote()
+        call.observeOn(AndroidSchedulers.mainThread())
+            .subscribeOn(Schedulers.io())
+            .subscribe(object : Observer<KanyeQuote> {
+                override fun onComplete() {
 
-        call.enqueue(object : Callback<KanyeQuote> {
-            override fun onResponse(call: Call<KanyeQuote>, response: Response<KanyeQuote>) {
-                contract!!.hideProgressBar()
-                if(response.isSuccessful){
-                   var result : KanyeQuote? = response.body()
-                    Log.d("result?", result?.quote)
                 }
-            }
 
-            override fun onFailure(call: Call<KanyeQuote>, t: Throwable) {
-                contract!!.hideProgressBar()
-                contract!!.displayToast()
-                Log.d("failed?", "failed")
-                Log.d("url?", call.request().url().toString())
-            }
+                override fun onSubscribe(d: Disposable) {
+                   
+                }
 
-        })
+                override fun onNext(t: KanyeQuote) {
+                    Log.d("quote?", t.quote)
+                }
+
+                override fun onError(e: Throwable) {
+                    Log.d("error?", e.printStackTrace().toString())
+                }
+
+            })
+
         //observable for each type
         //zip
         //create new model
